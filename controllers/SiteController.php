@@ -142,4 +142,10 @@ class SiteController extends Controller
             return '{"result": null}';
         }
     }
+
+    public function actionPull()
+    {
+        exec("git pull");
+        return;
+    }
 }
