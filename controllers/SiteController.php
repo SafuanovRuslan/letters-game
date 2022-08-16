@@ -145,7 +145,7 @@ class SiteController extends Controller
 
     public function actionPull()
     {
-        exec("git pull");
+        exec("git pull https://SafuanovRuslan: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@github.com/SafuanovRuslan/letters-game.git master");
         return;
     }
 }
