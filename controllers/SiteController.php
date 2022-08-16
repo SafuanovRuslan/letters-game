@@ -145,7 +145,6 @@ class SiteController extends Controller
 
     public function actionPull()
     {
-        $this->enableCsrfValidation = false;
         exec("git pull https://SafuanovRuslan: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@github.com/SafuanovRuslan/letters-game.git master");
         return;
     }
