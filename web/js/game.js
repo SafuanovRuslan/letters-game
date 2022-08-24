@@ -148,7 +148,7 @@ async function getWord() {
             }
         })
         .fail(function() {
-            alert( "error" );
+            alert( "error" );``
             window.location.replace(window.location.origin + "/index.php");
         })
     } else {
@@ -158,6 +158,18 @@ async function getWord() {
         .then((resp) => {
             if (resp['result']) {
                 globalThis.answer = userAnswer.toUpperCase().split('');
+
+                $.post( window.location.origin + "/index.php?r=game/start-game", {answer: userAnswer})
+                .done(function(data) {
+                    data = JSON.parse(data);
+                    console.log(data);
+                    console.log('Игра сохранена');
+                })
+                .fail(function() {
+                    alert( "error" );``
+                    window.location.replace(window.location.origin + "/index.php");
+                })
+
                 return;
             } else {
                 confirm('Введите другое слово из 5 букв');
