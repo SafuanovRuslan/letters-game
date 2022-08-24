@@ -9,8 +9,11 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use app\models\Game;
+use app\models\Games;
+use DateTime;
 
-class SiteController extends Controller
+class GameController extends Controller
 {
     /**
      * {@inheritdoc}
@@ -55,55 +58,13 @@ class SiteController extends Controller
     }
 
     /**
-     * Login action.
+     * Displays homepage.
      *
-     * @return Response|string
+     * @return string
      */
-    public function actionLogin()
+    public function actionIndex()
     {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
-        }
-
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        }
-
-        $model->password = '';
-        return $this->render('login', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
-    {
-        Yii::$app->user->logout();
-
-        return $this->goHome();
-    }
-
-    /**
-     * Displays contact page.
-     *
-     * @return Response|string
-     */
-    public function actionContact()
-    {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->contact(Yii::$app->params['adminEmail'])) {
-            Yii::$app->session->setFlash('contactFormSubmitted');
-
-            return $this->refresh();
-        }
-        return $this->render('contact', [
-            'model' => $model,
-        ]);
+        return $this->render('index');
     }
 
     /**
@@ -111,14 +72,46 @@ class SiteController extends Controller
      *
      * @return string
      */
-    public function actionAbout()
+    public function actionCheck()
     {
-        return $this->render('about');
+        $words = file_get_contents(__DIR__ . '/../assets/words.json');
+        $words = json_decode($words);
+
+        if (in_array($_GET['word'], $words)) {
+            return '{"result": "OK"}';
+        } else {
+            return '{"result": null}';
+        }
     }
 
-    public function actionPull()
+    /**
+     * Displays about page.
+     *
+     * @return string
+     */
+    public function actionContinueGame()
     {
-        exec("git pull https://SafuanovRuslan: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@github.com/SafuanovRuslan/letters-game.git master");
-        return;
+        $key = Yii::$app->request->post('key');
+        $result = Game::find()->where(['url' => $key])->asArray()->one();
+        // unset($result['answer']);
+
+        if ($result) {
+            return json_encode(['result' => $result], JSON_UNESCAPED_UNICODE);
+        } else {
+            return '{"result": null}';
+        }
     }
+
+    /**
+     * Displays about page.
+     *
+     * @return string
+     */
+    public function actionStartGame()
+    {
+        $answer = Yii::$app->request->post('answer');
+        $game = new Game();
+        return $game->startGame($answer);
+    }
+
 }

@@ -110,7 +110,7 @@ save.addEventListener('click', (event) => {
 });
 
 async function checkWord(word) {
-    let response = await fetch('index.php?r=site/check&word=' + word);
+    let response = await fetch('index.php?r=game/check&word=' + word);
     let result = await response.json();
     return result;
 }
@@ -133,19 +133,57 @@ async function checkWord(word) {
 // init();
 
 async function getWord() {
-    let userAnswer = prompt('Загадайте слово', '').toLowerCase();
-    userAnswer = userAnswer.replace('ё', 'е');
-    checkWord(userAnswer)
-    .then((resp) => {
-        if (resp['result']) {
-            globalThis.answer = userAnswer.toUpperCase().split('');
-            return;
-        } else {
-            confirm('Введите другое слово из 5 букв');
-            getWord();
-        }
-    });
+    let params = (new URL(document.location)).searchParams;
+    globalThis.answer = '';
+
+    if (params.get("key")) {
+        $.post( window.location.origin + "/index.php?r=game/continue-game", {key: params.get("key")})
+        .done(function(data) {
+            data = JSON.parse(data);
+            if (data.result) {
+                globalThis.answer = data.result.answer.toUpperCase().split('');
+                console.log(globalThis.answer);
+            } else {
+                window.location.replace(window.location.origin + "/index.php");
+            }
+        })
+        .fail(function() {
+            alert( "error" );
+            window.location.replace(window.location.origin + "/index.php");
+        })
+    } else {
+        let userAnswer = prompt('Загадайте слово', '').toLowerCase();
+        userAnswer = userAnswer.replace('ё', 'е');
+        checkWord(userAnswer)
+        .then((resp) => {
+            if (resp['result']) {
+                globalThis.answer = userAnswer.toUpperCase().split('');
+                return;
+            } else {
+                confirm('Введите другое слово из 5 букв');
+                getWord();
+            }
+        });
+    }
 }
+
+// async function getWord() {
+//     let response = await fetch('index.php?r=game/start-solo-game');
+//     let result = await response.json();
+
+//     let userAnswer = prompt('Загадайте слово', '').toLowerCase();
+//     userAnswer = userAnswer.replace('ё', 'е');
+//     checkWord(userAnswer)
+//     .then((resp) => {
+//         if (resp['result']) {
+//             globalThis.answer = userAnswer.toUpperCase().split('');
+//             return;
+//         } else {
+//             confirm('Введите другое слово из 5 букв');
+//             getWord();
+//         }
+//     });
+// }
 
 
 getWord();

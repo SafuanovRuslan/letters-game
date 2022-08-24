@@ -5,6 +5,8 @@ $db = require __DIR__ . '/db.php';
 
 $config = [
     'id' => '5letters',
+    'name' => '5 букв',
+    'defaultRoute' => 'game',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'aliases' => [
