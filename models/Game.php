@@ -55,7 +55,7 @@ class Game extends ActiveRecord
         $this->save();
 
         $response = [
-            'url' => "https://letters-game.ru/index.php?r=game/index&key=$this->url",   
+            'url' => $_SERVER['HTTP_ORIGIN'] . "/index.php?r=game/index&key=$this->url",   
         ];
         return json_encode($response, JSON_UNESCAPED_SLASHES);
     }

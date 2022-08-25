@@ -72,12 +72,39 @@ class GameController extends Controller
      *
      * @return string
      */
+    public function actionCheckAnswer()
+    {
+        $words = file_get_contents(__DIR__ . '/../assets/words.json');
+        $words = json_decode($words);
+
+        if (in_array($_GET['word'], $words)) {
+            return '{"result": "OK"}';
+        } else {
+            return '{"result": null}';
+        }
+    }
+
     public function actionCheck()
     {
         $words = file_get_contents(__DIR__ . '/../assets/words.json');
         $words = json_decode($words);
 
         if (in_array($_GET['word'], $words)) {
+
+            $answer = Yii::$app->request->get('word');
+            $key    = Yii::$app->request->get('key');
+            
+            $result = Game::find()->where(['url' => $key])->one();
+
+            for ($i = 1; $i < 7; $i++) {
+                $attempt = "attempt_$i";
+                if (!$result->$attempt) {
+                    $result->$attempt = $answer;
+                    $result->save();
+                    break;
+                }
+            }
+
             return '{"result": "OK"}';
         } else {
             return '{"result": null}';

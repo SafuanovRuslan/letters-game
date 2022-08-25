@@ -110,27 +110,17 @@ save.addEventListener('click', (event) => {
 });
 
 async function checkWord(word) {
-    let response = await fetch('index.php?r=game/check&word=' + word);
+    let params = (new URL(document.location)).searchParams;
+    let response = await fetch('index.php?r=game/check&word=' + word + '&key=' + params.get("key"));
     let result = await response.json();
     return result;
 }
 
-
-// async function init() {
-//     while (true) {
-//         let answer = prompt('Загадайте слово', '').toLowerCase();
-//         let check = await checkWord(answer).then(());
-//         if (check['result']) {
-//             answer = answer.toUpperCase().split('');
-//             break;
-//         }
-//         confirm('Введите другое слово из 5 букв');
-//     }
-
-//     globalThis.answer = answer;
-// }
-
-// init();
+async function checkAnswer(word) {
+    let response = await fetch('index.php?r=game/check-answer&word=' + word);
+    let result = await response.json();
+    return result;
+}
 
 async function getWord() {
     let params = (new URL(document.location)).searchParams;
@@ -142,7 +132,7 @@ async function getWord() {
             data = JSON.parse(data);
             if (data.result) {
                 globalThis.answer = data.result.answer.toUpperCase().split('');
-                console.log(globalThis.answer);
+                renderAnswers(data);
             } else {
                 window.location.replace(window.location.origin + "/index.php");
             }
@@ -154,7 +144,7 @@ async function getWord() {
     } else {
         let userAnswer = prompt('Загадайте слово', '').toLowerCase();
         userAnswer = userAnswer.replace('ё', 'е');
-        checkWord(userAnswer)
+        checkAnswer(userAnswer)
         .then((resp) => {
             if (resp['result']) {
                 globalThis.answer = userAnswer.toUpperCase().split('');
@@ -162,8 +152,9 @@ async function getWord() {
                 $.post( window.location.origin + "/index.php?r=game/start-game", {answer: userAnswer})
                 .done(function(data) {
                     data = JSON.parse(data);
-                    console.log(data);
                     console.log('Игра сохранена');
+                    confirm('Ссылка на игру:\n' + data.url);
+                    window.location.href = data.url;
                 })
                 .fail(function() {
                     alert( "error" );``
@@ -179,23 +170,45 @@ async function getWord() {
     }
 }
 
-// async function getWord() {
-//     let response = await fetch('index.php?r=game/start-solo-game');
-//     let result = await response.json();
+async function renderAnswers(data) {
+    for (let k = 1; k < 7; k++) {
+        if (!data.result[`attempt_${k}`]) break;
+        let answer = data.result[`attempt_${k}`].toUpperCase().split('');
 
-//     let userAnswer = prompt('Загадайте слово', '').toLowerCase();
-//     userAnswer = userAnswer.replace('ё', 'е');
-//     checkWord(userAnswer)
-//     .then((resp) => {
-//         if (resp['result']) {
-//             globalThis.answer = userAnswer.toUpperCase().split('');
-//             return;
-//         } else {
-//             confirm('Введите другое слово из 5 букв');
-//             getWord();
-//         }
-//     });
-// }
+        let word = '';
+        for (let i = 1; i <= 5; i++) {
+            let cell = document.getElementById([game.current[0], i].join(''));
+            cell.value = answer[i-1];
+            let letter = document.getElementById(cell.value);
+            
+            if (globalThis.answer[i-1] == cell.value) {
+                cell.classList.add('find');
+                letter.classList.add('find');
+            };
+            if (globalThis.answer.indexOf(cell.value) != -1) {
+                cell.classList.add('good');
+                letter.classList.add('good');
+            }
+            cell.classList.add('checked');
+            // letter.classList.add('checked');
+            word += cell.value;
+        }
+
+        if (word == globalThis.answer.join('')) {
+            alert('Игра окончена, вы выиграли');
+            game.current = null;
+            return;
+        }
+
+        if (game.current[0] == 6) {
+            alert('GAME OVER LOOSER :D\nМы загадали слово ' + globalThis.answer.join(''));
+        } else {
+            game.current[0]++;
+            game.current[1] = 1;
+            game.status = false;
+        }
+    }
+}
 
 
 getWord();
