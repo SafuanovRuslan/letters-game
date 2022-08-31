@@ -96,6 +96,8 @@ class GameController extends Controller
             
             $result = Game::find()->where(['url' => $key])->one();
 
+            var_dump($result);
+
             for ($i = 1; $i < 7; $i++) {
                 $attempt = "attempt_$i";
                 if (!$result->$attempt) {
